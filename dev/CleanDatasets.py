@@ -60,7 +60,7 @@ class CleanDatasets():
         def demojize_text(text):
             """Convert emojis to text descriptions."""
             if isinstance(text, str):
-                if any(char in emoji.EMOJI_DATA for char in text): 
+                if emoji.emoji_list(text):
                     return emoji.demojize(text) 
             return text
 
