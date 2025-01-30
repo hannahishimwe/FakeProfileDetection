@@ -17,7 +17,8 @@ import emoji
 
 class CleanDatasets():
 
-    def __init__(self, columns_to_rename, columns_to_drop, column_to_binary, binary_label="human", keep_capitalisation=True):
+    def __init__(self, df, columns_to_rename, columns_to_drop, column_to_binary, binary_label="human", keep_capitalisation=True):
+        self.df = df
         self.keep_capitalisation = keep_capitalisation
         self.columns_to_rename = columns_to_rename
         self.columns_to_drop = columns_to_drop
@@ -69,9 +70,8 @@ class CleanDatasets():
         return self.df
 
     
-    def clean_df(self, df):
+    def clean_df(self):
         """the order is very important to not lose information"""
-        self.df = df
         self.clean_whitespace()
         self.drop_columns(columns=self.columns_to_drop)
         self.turn_category_to_binary(column=self.column_to_binary)
