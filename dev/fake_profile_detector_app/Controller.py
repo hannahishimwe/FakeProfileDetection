@@ -34,7 +34,7 @@ class Controller:
         
         # Return, instead of a prediction, probability tuple, a default error tuple if an exception occurs
         except ValueError as ve:
-            return "Input Error", 0.0
+            return "Error with input. Enter non-empty string e.g 'Hello World'.", 0.0
         
         except Exception as e:
-            return "Unexpected Error", 0.0  
+            return "Something went wrong. Please try again.", 0.0  
