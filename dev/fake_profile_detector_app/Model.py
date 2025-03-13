@@ -14,6 +14,10 @@ NOTE: uses single responsibility principle in functions
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch.nn.functional as F 
+import shap
+import matplotlib.pyplot as plt
+from io import BytesIO
+from PIL import Image
 
 class Model:
 
@@ -31,8 +35,11 @@ class Model:
         - tokenizer_name(str): the name of the pre-trained tokenizer to be loaded
 
         """
+        self.outputs = None
+        self.inputs = None
         try:
             self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+            print(self.model)
             self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         except Exception as e:
             raise ValueError(f"Error loading model or tokenizer: {e}")
@@ -58,13 +65,18 @@ class Model:
         
         """
 
-        inputs = self.tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
+        self.inputs = self.tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
 
         with torch.no_grad(): 
-            outputs = self.model(**inputs)
+            self.outputs = self.model(**self.inputs)
         
-        prediction = self.get_prediction(outputs)
-        probability = self.get_probability(outputs)
+        prediction = self.get_prediction(self.outputs)
+        print(prediction)
+        probability = self.get_probability(self.outputs)
+        try:
+            print(probability)
+        except:
+            print("error")
 
         return prediction, probability
 
@@ -105,10 +117,32 @@ class Model:
         
         """
 
-        probability = F.softmax(outputs, dim=-1).max().item()
+        logits = outputs.logits
+        probability = F.softmax(logits, dim=-1).max().item()
+
+        # Convert to percentage and round to 2 decimals
         probability = round(probability * 100, 2)
 
         return probability
 
 
-        
+    def get_summary_plot(self, input_text: str):
+        try:
+            print("in get_summary_plot")
+            print(self.outputs)
+            explainer = shap.Explainer(self.outputs.logits, self.inputs['input_ids'])
+            shap_values = explainer(self.inputs['input_ids'])
+
+            # Create the summary plot (do not show it yet)
+            plt.figure(figsize=(10, 5))
+            shap.summary_plot(shap_values, self.inputs['input_ids'], show=False, plot_type='bar')
+
+            # Save the plot to a BytesIO object
+            buf = BytesIO()
+            plt.savefig(buf, format='PNG')
+            buf.seek(0)
+            image = Image.open(buf)
+            return image  # Return the image object (not the plot)
+        except Exception as e:
+            print(f"Error generating SHAP summary plot: {e}")
+            return None

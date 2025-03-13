@@ -15,6 +15,10 @@ Responsibilites involve:
 import tkinter as tk
 from tkinter import messagebox
 from Controller import Controller
+import shap
+import matplotlib.pyplot as plt
+from PIL import Image, ImageTk
+import io
 
 class View:
 
@@ -23,7 +27,8 @@ class View:
         self.root.title("Human Or Bot Profile Detector")
 
         # Initialize the Controller with the model and tokenizer names
-        self.controller = Controller("distilbert-base-uncased", "distilbert-base-uncased")
+        model_path = "dev/roberta_round1"
+        self.controller = Controller(model_path, "roberta-base")
 
         self.classification_pg_frame = tk.Frame(self.root)
         self.additional_info_pg_frame = tk.Frame(self.root)
@@ -65,11 +70,20 @@ class View:
         self.additional_info_button.pack(pady=10)
         self.additional_info_button.pack_forget()  # Hide initially
 
-
     
     def create_additional_info_page(self):
         label = tk.Label(self.additional_info_pg_frame, text="Additional Information Page")
         label.pack(pady=10)
+
+        shap_image = self.handle_shap()
+        if shap_image is not None:
+                # Convert the PIL image to a Tkinter-compatible image
+                tk_image = ImageTk.PhotoImage(shap_image)
+                
+                # Create a label to display the image
+                img_label = tk.Label(self.additional_info_pg_frame, image=tk_image)
+                img_label.image = tk_image  # Keep a reference to avoid garbage collection
+                img_label.pack(pady=10)
 
         back_button = tk.Button(self.additional_info_pg_frame, text="Back to Classification",
                                 command=lambda: self.show_frame(self.classification_pg_frame))
@@ -82,7 +96,7 @@ class View:
 
         try:
             # Get the prediction and probability from the controller
-            prediction, probability = self.controller.handle_input(input_text)
+            prediction, probability = self.controller.handle_classification(input_text)
 
             # Update the result labels
             self.result_label.config(text=f"Prediction: {prediction}")
@@ -90,11 +104,28 @@ class View:
 
             self.classify_button.pack_forget()
             self.additional_info_button.pack()
+            self.new_classification_button = tk.Button(self.classification_pg_frame, text="New Classification",
+                                                       command=lambda: self.reset_classification_page())
+            self.new_classification_button.pack(pady=10)
 
         except Exception as e:
             # If any error occurs, show a message box with the error
             messagebox.showerror("Error", f"An error occurred: {e}")
-        
+    
+    def reset_classification_page(self):
 
+        self.text_entry.delete(0, tk.END)
+        self.result_label.config(text="Prediction: ")
+        self.probability_label.config(text="Probability: ")
+        self.classify_button.pack(pady=10)
+        self.additional_info_button.pack_forget()
+        self.new_classification_button.pack_forget()
+        self.show_frame(self.classification_pg_frame)
+
+
+    def handle_shap(self):
+        input_text = self.text_entry.get()
+
+        return self.controller.handle_shap(input_text)
 
 
