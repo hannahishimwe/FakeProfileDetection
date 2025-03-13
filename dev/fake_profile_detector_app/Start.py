@@ -1,14 +1,32 @@
 import tkinter as tk
-from View import View  # Import TkinterApp class
+from tkinter import ttk
+from View import View  
+from Model import Model
+from Controller import Controller
 
 class MainApp:
 
     def __init__(self):
         """Initialize and run the Tkinter app."""
-        self.root = tk.Tk()  # Create the root Tkinter window
+        self.root = tk.Tk()
+        self.root.tk.call("source", "dev/fake_profile_detector_app/themes/forest-dark.tcl")  
+        ttk.Style().theme_use("forest-dark")  
         self.root.geometry("700x350")
-        self.app = View(self.root)  # Initialize the TkinterApp with root window
-        self.root.mainloop()  # Run the Tkinter main loop
+
+        # Dictionary of dataset names & file paths
+        self.dataset_options = {
+            "Twitter Dataset": "dev/fake_profile_detector_app/production_csv/validation_sample.csv",
+        }
+
+        # Initialize Model
+        self.model = Model()
+
+        # Initialize Controller and View
+        self.controller = Controller(self.model, None, self.dataset_options)
+        self.view = View(self.root, self.controller, self.dataset_options)
+        self.controller.view = self.view  # Assign view to controller after creation
+
+        self.root.mainloop()
 
 # This will only run when the file is executed directly
 if __name__ == "__main__":

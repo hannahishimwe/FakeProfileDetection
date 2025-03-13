@@ -11,121 +11,114 @@ Responsibilites involve:
 
 
 """
-
 import tkinter as tk
-from tkinter import messagebox
-from Controller import Controller
-import shap
-import matplotlib.pyplot as plt
-from PIL import Image, ImageTk
-import io
+from tkinter import ttk
 
 class View:
-
-    def __init__(self, root):
+    def __init__(self, root, controller, dataset_options):
+        self.controller = controller
         self.root = root
-        self.root.title("Human Or Bot Profile Detector")
+        # Center everything
+        self.root.geometry("600x400")
+        self.root.configure(padx=20, pady=20)
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
 
-        # Initialize the Controller with the model and tokenizer names
-        model_path = "dev/roberta_round1"
-        self.controller = Controller(model_path, "roberta-base")
+        # Frame for alignment
+        main_frame = ttk.Frame(self.root)
+        main_frame.pack(expand=True)
 
-        self.classification_pg_frame = tk.Frame(self.root)
-        self.additional_info_pg_frame = tk.Frame(self.root)
+        # Window Title
+        self.label = ttk.Label(main_frame, text="Select Dataset:", font=("Arial", 14))
+        self.label.pack(pady=5)
 
-        self.create_classification_page()
-        self.create_additional_info_page()
+        # Dataset Dropdown
+        self.dataset_combobox = ttk.Combobox(main_frame, values=list(dataset_options.keys()), state="readonly")
+        self.dataset_combobox.pack(pady=5)
+        self.root.update_idletasks()
+        # self.dataset_combobox.bind("<<ComboboxSelected>>", self.on_dataset_selected)
 
-        self.show_frame(self.classification_pg_frame)
-    
-    def show_frame(self, frame):
-        for f in (self.classification_pg_frame, self.additional_info_pg_frame):
-            f.pack_forget()  
-        frame.pack(fill="both", expand=True) 
-
-    def create_classification_page(self):
-        # Input label
-        label = tk.Label(self.classification_pg_frame, text="Enter Text To Receive Classification:")
-        label.pack(pady=5)
-
-        # Text entry box for user input
-        self.text_entry = tk.Entry(self.classification_pg_frame, width=40)
-        self.text_entry.pack(pady=5)
-
-        # Label to display the result
-        self.result_label = tk.Label(self.classification_pg_frame, text="Prediction: ", font=("Helvetica", 12))
-        self.result_label.pack(pady=10)
-
-        self.probability_label = tk.Label(self.classification_pg_frame, text="Probability: ", font=("Helvetica", 12))
-        self.probability_label.pack(pady=5)
-
-        # Button to trigger classification
-        self.classify_button = tk.Button(self.classification_pg_frame, text="Classify", command=self.handle_classification)
+        # Classify Button
+        self.classify_button = ttk.Button(main_frame, text="Classify Dataset", command=self.start_classification)
         self.classify_button.pack(pady=10)
 
-        self.additional_info_button = tk.Button(
-            self.classification_pg_frame, text="Additional Information",
-            command=lambda: self.show_frame(self.additional_info_pg_frame)
-        )
-        self.additional_info_button.pack(pady=10)
-        self.additional_info_button.pack_forget()  # Hide initially
-
-    
-    def create_additional_info_page(self):
-        label = tk.Label(self.additional_info_pg_frame, text="Additional Information Page")
-        label.pack(pady=10)
-
-        shap_image = self.handle_shap()
-        if shap_image is not None:
-                # Convert the PIL image to a Tkinter-compatible image
-                tk_image = ImageTk.PhotoImage(shap_image)
-                
-                # Create a label to display the image
-                img_label = tk.Label(self.additional_info_pg_frame, image=tk_image)
-                img_label.image = tk_image  # Keep a reference to avoid garbage collection
-                img_label.pack(pady=10)
-
-        back_button = tk.Button(self.additional_info_pg_frame, text="Back to Classification",
-                                command=lambda: self.show_frame(self.classification_pg_frame))
-        back_button.pack(pady=10)
-        self.show_frame(self.additional_info_pg_frame)
-
-    def handle_classification(self):
-        # Get the input text from the entry box
-        input_text = self.text_entry.get()
-
-        try:
-            # Get the prediction and probability from the controller
-            prediction, probability = self.controller.handle_classification(input_text)
-
-            # Update the result labels
-            self.result_label.config(text=f"Prediction: {prediction}")
-            self.probability_label.config(text=f"Probability: {probability}%")
-
-            self.classify_button.pack_forget()
-            self.additional_info_button.pack()
-            self.new_classification_button = tk.Button(self.classification_pg_frame, text="New Classification",
-                                                       command=lambda: self.reset_classification_page())
-            self.new_classification_button.pack(pady=10)
-
-        except Exception as e:
-            # If any error occurs, show a message box with the error
-            messagebox.showerror("Error", f"An error occurred: {e}")
-    
-    def reset_classification_page(self):
-
-        self.text_entry.delete(0, tk.END)
-        self.result_label.config(text="Prediction: ")
-        self.probability_label.config(text="Probability: ")
-        self.classify_button.pack(pady=10)
-        self.additional_info_button.pack_forget()
+        # New Classification Button
+        self.new_classification_button = ttk.Button(root, text="New Classification", command=self.reset_ui)
         self.new_classification_button.pack_forget()
-        self.show_frame(self.classification_pg_frame)
 
+        # Status Message Label
+        self.status_label = ttk.Label(main_frame, text="", font=("Arial", 12))
+        self.status_label.pack(pady=5)
 
-    def handle_shap(self):
-        input_text = self.text_entry.get()
+        # Grey Box for Results
+        self.results_frame = ttk.Frame(main_frame, padding=10, style="Results.TFrame")
+        self.results_frame.pack(pady=5, fill="x")
+        self.results_frame.pack_forget()  # Hide initially
 
-        return self.controller.handle_shap(input_text)
+        # Metric Labels (Left-aligned) and Values (Right-aligned)
+        metrics = ["Predicted Humans:", "Predicted Bots:", "Accuracy:", "Precision:", "Recall:", "F1-score:"]
+        self.metric_labels = []
+        self.value_labels = []
 
+        for i, metric in enumerate(metrics):
+            label = ttk.Label(self.results_frame, text=metric, font=("Arial", 12), anchor="w", foreground="white")
+            label.grid(row=i, column=0, sticky="w", padx=(10, 5))  # Left-aligned
+            self.metric_labels.append(label)
 
+            value_label = ttk.Label(self.results_frame, text="--", font=("Arial", 12), anchor="e", foreground="white")
+            value_label.grid(row=i, column=1, sticky="e", padx=(5, 10))  # Right-aligned
+            self.value_labels.append(value_label)
+
+        # Apply custom styling
+        self.style = ttk.Style()
+        self.style.configure("Results.TFrame", background="grey20")
+        self.root.update_idletasks()
+
+    def start_classification(self):
+        """Updates UI while classification is running."""
+        self.status_label.config(text="Classifying In Progress...", foreground="orange")
+        self.root.update_idletasks() 
+        self.controller.handle_classification()
+        self.status_label.pack_forget()
+        self.classify_button.pack_forget()
+        self.new_classification_button.pack(pady=5)  # Show the button
+        self.root.update_idletasks()
+
+    def on_dataset_selected(self, event):
+        """Handles dataset selection from ComboBox."""
+        selected_dataset = self.dataset_combobox.get()
+        self.controller.load_selected_dataset(selected_dataset)
+        self.dataset_combobox.update_idletasks()
+
+    def display_message(self, message):
+        """Displays a success message."""
+        self.status_label.config(text=message, foreground="green")
+
+    def display_error(self, error_message):
+        """Displays an error message."""
+        self.status_label.config(text=error_message, foreground="red")
+    
+    def reset_ui(self):
+        """Resets the UI to its initial state."""
+        self.results_frame.pack_forget()  # Clear results
+        self.new_classification_button.pack_forget()  # Hide the button
+        self.classify_button.pack(pady=10)
+        self.status_label.config(text="")
+        self.status_label.pack(pady=5)
+        self.root.update_idletasks()
+
+    def display_results(self, results):
+        """Formats and displays the classification results in a grey box with aligned text."""
+        values = [
+        results["Predicted Humans"],
+        results["Predicted Bots"],
+        f"{results['Accuracy']:.4f}",
+        f"{results['Precision']:.4f}",
+        f"{results['Recall']:.4f}",
+        f"{results['F1-score']:.4f}"
+        ]
+    
+        for label, value in zip(self.value_labels, values):
+            label.config(text=value)
+
+        self.results_frame.pack(pady=10, fill="x")

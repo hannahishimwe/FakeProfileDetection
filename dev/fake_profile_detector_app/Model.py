@@ -14,16 +14,16 @@ NOTE: uses single responsibility principle in functions
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch.nn.functional as F 
-import shap
-import matplotlib.pyplot as plt
-from io import BytesIO
-from PIL import Image
+import pandas as pd
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 class Model:
 
     HUMAN_LABEL = 1
+    MODEL_NAME = "dev/roberta_round1"   
+    TOKENIZER_NAME = "roberta-base"
     
-    def __init__(self, model_name, tokenizer_name):
+    def __init__(self):
         """
 
         Initializes the Model object with the pre-trained model and tokenizer.
@@ -38,18 +38,62 @@ class Model:
         self.outputs = None
         self.inputs = None
         try:
-            self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
-            print(self.model)
-            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+            self.model = AutoModelForSequenceClassification.from_pretrained(self.MODEL_NAME)
+            self.tokenizer = AutoTokenizer.from_pretrained(self.TOKENIZER_NAME)
         except Exception as e:
             raise ValueError(f"Error loading model or tokenizer: {e}")
 
         self.model.eval() 
+    
+    def evaluate_model(self, df, text_column="text", label_column="is_human"):
+        """
+        Evaluates the model's performance and counts predicted Human vs Bot.
+
+        params:
+        - model (Model): The classification model.
+        - df (pd.DataFrame): The dataset containing text samples and true labels.
+        - text_column (str): The name of the column containing text data.
+        - label_column (str): The name of the column containing the true labels (1 = Human, 0 = Bot).
+
+        returns:
+        - dict: A dictionary containing Accuracy, Precision, Recall, F1-score, 
+        and the count of predicted Humans and Bots.
+        """
+        print("starting evaluations...")
+        predictions = []
+
+        for text in df[text_column]:
+            pred_label = self.get_classification(text)  # Model's classification
+            predictions.append(1 if pred_label == "Human" else 0)  # Convert to binary
+
+        # Convert to Pandas Series for easy aggregation
+        y_pred = pd.Series(predictions)
+        y_true = df[label_column]
+
+        # Compute evaluation metrics
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred)
+        recall = recall_score(y_true, y_pred)
+        f1 = f1_score(y_true, y_pred)
+
+        # Count predicted classes
+        num_humans = (y_pred == 1).sum()
+        num_bots = (y_pred == 0).sum()
+        total_predictions = num_humans + num_bots
+
+        return {
+            "Predicted Humans": f"{(num_humans / total_predictions) * 100:.0f}%",
+            "Predicted Bots": f"{(num_bots / total_predictions) * 100:.0f}%",
+            "Accuracy": round(accuracy, 4),
+            "Precision": round(precision, 4),
+            "Recall": round(recall, 4),
+            "F1-score": round(f1, 4)
+        }
 
     def get_classification(self, input_text: str) -> tuple[str, float]:
         """
 
-        Processes input and uses helper functio to return the classification and probability of the prediction
+        Processes input and uses helper function to return the classification and probability of the prediction
         This will be passed on to the View component.
 
         params:
@@ -61,7 +105,6 @@ class Model:
 
         - tuple:
             - prediction (str): the classification of the prediction
-            - probability (float): the probability of the prediction
         
         """
 
@@ -70,79 +113,53 @@ class Model:
         with torch.no_grad(): 
             self.outputs = self.model(**self.inputs)
         
-        prediction = self.get_prediction(self.outputs)
-        print(prediction)
-        probability = self.get_probability(self.outputs)
-        try:
-            print(probability)
-        except:
-            print("error")
-
-        return prediction, probability
-
-
-    def get_prediction(self, outputs):
-        """
-
-        Handles logic to predict the class of the input text data.
-
-        params:
-
-        - self: the Model object
-        - outputs (object): the output of the model after processing the input text data
-
-        returns:
-
-        - prediction (str): the most likely classification according to the model (whether it was written by a human or bot)
-        
-        """
-        prediction = "Human" if torch.argmax(outputs.logits, dim=-1).item() == self.HUMAN_LABEL else "Bot"
+        prediction = "Human" if torch.argmax(self.outputs.logits, dim=-1).item() == self.HUMAN_LABEL else "Bot"
         
         return prediction
     
-    def get_probability(self, outputs): 
 
-        """
 
-        Handles logic to return the probability of the prediction.
+    # def get_prediction(self, outputs):
+    #     """
 
-        params:
+    #     Handles logic to predict the class of the input text data.
 
-        - self: the Model object
-        - outputs (object): the output of the model after processing the input text data
+    #     params:
 
-        returns:
+    #     - self: the Model object
+    #     - outputs (object): the output of the model after processing the input text data
 
-        - probability (float): the probability of the prediction, rounded to 2 decimal places
+    #     returns:
+
+    #     - prediction (str): the most likely classification according to the model (whether it was written by a human or bot)
         
-        """
+    #     """
+    #     prediction = "Human" if torch.argmax(outputs.logits, dim=-1).item() == self.HUMAN_LABEL else "Bot"
+        
+    #     return prediction
+    
+    # def get_probability(self, outputs): 
 
-        logits = outputs.logits
-        probability = F.softmax(logits, dim=-1).max().item()
+    #     """
 
-        # Convert to percentage and round to 2 decimals
-        probability = round(probability * 100, 2)
+    #     Handles logic to return the probability of the prediction.
 
-        return probability
+    #     params:
 
+    #     - self: the Model object
+    #     - outputs (object): the output of the model after processing the input text data
 
-    def get_summary_plot(self, input_text: str):
-        try:
-            print("in get_summary_plot")
-            print(self.outputs)
-            explainer = shap.Explainer(self.outputs.logits, self.inputs['input_ids'])
-            shap_values = explainer(self.inputs['input_ids'])
+    #     returns:
 
-            # Create the summary plot (do not show it yet)
-            plt.figure(figsize=(10, 5))
-            shap.summary_plot(shap_values, self.inputs['input_ids'], show=False, plot_type='bar')
+    #     - probability (float): the probability of the prediction, rounded to 2 decimal places
+        
+    #     """
 
-            # Save the plot to a BytesIO object
-            buf = BytesIO()
-            plt.savefig(buf, format='PNG')
-            buf.seek(0)
-            image = Image.open(buf)
-            return image  # Return the image object (not the plot)
-        except Exception as e:
-            print(f"Error generating SHAP summary plot: {e}")
-            return None
+    #     logits = outputs.logits
+    #     probability = F.softmax(logits, dim=-1).max().item()
+
+    #     # Convert to percentage and round to 2 decimals
+    #     probability = round(probability * 100, 2)
+
+    #     return probability
+
