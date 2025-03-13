@@ -7,8 +7,6 @@ Responsibilites involve:
 - loading the pre-trained model and tokenizer from the model chosen from my experiments;
 - responding to the input text data passed in from the user and returning the prediction from the model.
 
-NOTE: uses single responsibility principle in functions
-
 """
 
 import torch
@@ -20,8 +18,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 class Model:
 
     HUMAN_LABEL = 1
-    MODEL_NAME = "dev/roberta_round1"   
-    TOKENIZER_NAME = "roberta-base"
+    MODEL_NAME = "dev/roberta_round1"   #CHANGE 
+    TOKENIZER_NAME = "roberta-base"     #CHANGE
     
     def __init__(self):
         """
@@ -117,49 +115,3 @@ class Model:
         
         return prediction
     
-
-
-    # def get_prediction(self, outputs):
-    #     """
-
-    #     Handles logic to predict the class of the input text data.
-
-    #     params:
-
-    #     - self: the Model object
-    #     - outputs (object): the output of the model after processing the input text data
-
-    #     returns:
-
-    #     - prediction (str): the most likely classification according to the model (whether it was written by a human or bot)
-        
-    #     """
-    #     prediction = "Human" if torch.argmax(outputs.logits, dim=-1).item() == self.HUMAN_LABEL else "Bot"
-        
-    #     return prediction
-    
-    # def get_probability(self, outputs): 
-
-    #     """
-
-    #     Handles logic to return the probability of the prediction.
-
-    #     params:
-
-    #     - self: the Model object
-    #     - outputs (object): the output of the model after processing the input text data
-
-    #     returns:
-
-    #     - probability (float): the probability of the prediction, rounded to 2 decimal places
-        
-    #     """
-
-    #     logits = outputs.logits
-    #     probability = F.softmax(logits, dim=-1).max().item()
-
-    #     # Convert to percentage and round to 2 decimals
-    #     probability = round(probability * 100, 2)
-
-    #     return probability
-

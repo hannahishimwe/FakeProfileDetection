@@ -16,46 +16,50 @@ from tkinter import ttk
 
 class View:
     def __init__(self, root, controller, dataset_options):
+
+        # Initialising root and controller objects
+
         self.controller = controller
         self.root = root
-        # Center everything
+
         self.root.geometry("600x400")
         self.root.configure(padx=20, pady=20)
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
 
-        # Frame for alignment
+        # CREATE MAIN FRAME
+
         main_frame = ttk.Frame(self.root)
         main_frame.pack(expand=True)
 
-        # Window Title
+
         self.label = ttk.Label(main_frame, text="Select Dataset:", font=("Arial", 14))
         self.label.pack(pady=5)
 
-        # Dataset Dropdown
+
         self.dataset_combobox = ttk.Combobox(main_frame, values=list(dataset_options.keys()), state="readonly")
         self.dataset_combobox.pack(pady=5)
         self.root.update_idletasks()
-        # self.dataset_combobox.bind("<<ComboboxSelected>>", self.on_dataset_selected)
+        # self.dataset_combobox.bind("<<ComboboxSelected>>", self.on_dataset_selected) -- commented for efficiency, uncomment if using multiple datasets
 
-        # Classify Button
+
         self.classify_button = ttk.Button(main_frame, text="Classify Dataset", command=self.start_classification)
         self.classify_button.pack(pady=10)
 
-        # New Classification Button
+
         self.new_classification_button = ttk.Button(root, text="New Classification", command=self.reset_ui)
         self.new_classification_button.pack_forget()
 
-        # Status Message Label
+
         self.status_label = ttk.Label(main_frame, text="", font=("Arial", 12))
         self.status_label.pack(pady=5)
 
-        # Grey Box for Results
+
         self.results_frame = ttk.Frame(main_frame, padding=10, style="Results.TFrame")
         self.results_frame.pack(pady=5, fill="x")
-        self.results_frame.pack_forget()  # Hide initially
+        self.results_frame.pack_forget() 
 
-        # Metric Labels (Left-aligned) and Values (Right-aligned)
+        # Display classification results
         metrics = ["Predicted Humans:", "Predicted Bots:", "Accuracy:", "Precision:", "Recall:", "F1-score:"]
         self.metric_labels = []
         self.value_labels = []
@@ -81,7 +85,7 @@ class View:
         self.controller.handle_classification()
         self.status_label.pack_forget()
         self.classify_button.pack_forget()
-        self.new_classification_button.pack(pady=5)  # Show the button
+        self.new_classification_button.pack(pady=5)  
         self.root.update_idletasks()
 
     def on_dataset_selected(self, event):
@@ -100,8 +104,8 @@ class View:
     
     def reset_ui(self):
         """Resets the UI to its initial state."""
-        self.results_frame.pack_forget()  # Clear results
-        self.new_classification_button.pack_forget()  # Hide the button
+        self.results_frame.pack_forget()  
+        self.new_classification_button.pack_forget()  
         self.classify_button.pack(pady=10)
         self.status_label.config(text="")
         self.status_label.pack(pady=5)

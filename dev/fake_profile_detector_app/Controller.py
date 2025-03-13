@@ -4,11 +4,11 @@ This module represents the Controller component of the M-V-C design pattern.
 This module contains the Controller class which acts as an intermediary between the Model and the View.
 
 Responsibilites involve:
--  TODO: Add docstring
+
+- loading the dataset based on user selection;
+- handling the classification of the dataset and displaying the results in the View.
 
 """
-from Model import Model  # Ensure the filename is lowercase
-from View import View
 import pandas as pd
 
 class Controller:
@@ -16,8 +16,10 @@ class Controller:
         self.model = model
         self.view = view
         self.dataset_options = dataset_options  
+        #Pre load for efficiency for the demonstration
         self.dataset = pd.read_csv("dev/fake_profile_detector_app/production_csv/validation_sample.csv")
 
+    # To be used if other datasets are to be loaded
     def load_selected_dataset(self, dataset_name):
         """Loads dataset based on user selection from ComboBox."""
         file_path = self.dataset_options.get(dataset_name)  
