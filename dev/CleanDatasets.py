@@ -71,7 +71,7 @@ class CleanDatasets():
 
     
     def clean_df(self):
-        """the order is very important to not lose information"""
+      
         self.clean_whitespace()
         self.drop_columns(columns=self.columns_to_drop)
         self.turn_category_to_binary(column=self.column_to_binary)
@@ -80,3 +80,6 @@ class CleanDatasets():
         self.decode_html_entities()
         self.text_to_lowerCase()
         return self.df
+
+
+
