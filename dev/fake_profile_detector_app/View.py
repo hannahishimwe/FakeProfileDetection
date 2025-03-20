@@ -60,7 +60,7 @@ class View:
         self.results_frame.pack_forget() 
 
         # Display classification results
-        metrics = ["Predicted Humans:", "Predicted Bots:", "Accuracy:", "Precision:", "Recall:", "F1-score:"]
+        metrics = ["Predicted Humans:", "Predicted Bots:", "Actual Humans:", "Actual Bots:", "Accuracy:", "Precision:", "Recall:", "F1-score:"]
         self.metric_labels = []
         self.value_labels = []
 
@@ -116,6 +116,8 @@ class View:
         values = [
         results["Predicted Humans"],
         results["Predicted Bots"],
+        results["Actual Humans"],
+        results["Actual Bots"],
         f"{results['Accuracy']:.4f}",
         f"{results['Precision']:.4f}",
         f"{results['Recall']:.4f}",

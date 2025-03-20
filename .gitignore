@@ -187,4 +187,4 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks
 
 #model file is too large
-dev/roberta_round1/*.safetensors
+dev/fake_profile_detector_app/model/

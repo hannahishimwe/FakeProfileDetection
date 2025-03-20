@@ -19,7 +19,7 @@ class MainApp:
         self.root.title("Experimenting the Suitability of Pre-trained Transformers for Fake Profile Detection")
         self.root.tk.call("source", "dev/fake_profile_detector_app/themes/forest-dark.tcl")  
         ttk.Style().theme_use("forest-dark")  
-        self.root.geometry("700x350")
+        self.root.geometry("1000x350")
 
 
         self.dataset_options = {

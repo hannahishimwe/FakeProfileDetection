@@ -8,7 +8,7 @@ Responsibilites involve:
 - responding to the input text data passed in from the user and returning the prediction from the model.
 
 """
-
+import os
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch.nn.functional as F 
@@ -18,8 +18,9 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 class Model:
 
     HUMAN_LABEL = 1
-    MODEL_NAME = "dev/roberta_round1"   #CHANGE 
-    TOKENIZER_NAME = "roberta-base"     #CHANGE
+    MODEL_NAME = "dev/fake_profile_detector_app/model/checkpoint-3125"  
+    TOKENIZER_NAME = "roberta-base" 
+    QUANTIZED_MODEL_PATH = f"{MODEL_NAME}/quantized_model.pt"  
     
     def __init__(self):
         """
@@ -37,6 +38,12 @@ class Model:
         self.inputs = None
         try:
             self.model = AutoModelForSequenceClassification.from_pretrained(self.MODEL_NAME)
+            #quanitize to reduce model size
+            if not os.path.exists(self.QUANTIZED_MODEL_PATH):
+                self.quantize_and_save_model()
+            else:
+                self.model.load_state_dict(torch.load(self.QUANTIZED_MODEL_PATH))
+
             self.tokenizer = AutoTokenizer.from_pretrained(self.TOKENIZER_NAME)
         except Exception as e:
             raise ValueError(f"Error loading model or tokenizer: {e}")
@@ -75,13 +82,18 @@ class Model:
         f1 = f1_score(y_true, y_pred)
 
         # Count predicted classes
-        num_humans = (y_pred == 1).sum()
-        num_bots = (y_pred == 0).sum()
-        total_predictions = num_humans + num_bots
+        num_pred_humans = (y_pred == 1).sum()
+        num_pred_bots = (y_pred == 0).sum()
+
+    # Count actual classes
+        num_actual_humans = (y_true == 1).sum()
+        num_actual_bots = (y_true == 0).sum()
 
         return {
-            "Predicted Humans": f"{(num_humans / total_predictions) * 100:.0f}%",
-            "Predicted Bots": f"{(num_bots / total_predictions) * 100:.0f}%",
+            "Predicted Humans": num_pred_humans,
+            "Predicted Bots": num_pred_bots,
+            "Actual Humans": num_actual_humans,
+            "Actual Bots": num_actual_bots,
             "Accuracy": round(accuracy, 4),
             "Precision": round(precision, 4),
             "Recall": round(recall, 4),
@@ -114,4 +126,12 @@ class Model:
         prediction = "Human" if torch.argmax(self.outputs.logits, dim=-1).item() == self.HUMAN_LABEL else "Bot"
         
         return prediction
-    
+
+
+
+    def quantize_and_save_model(self):
+        """Quantizes the model and saves it for future use."""
+        self.model = torch.quantization.quantize_dynamic(
+            self.model, {torch.nn.Linear}, dtype=torch.qint8
+        )
+        torch.save(self.model.state_dict(), self.QUANTIZED_MODEL_PATH)
