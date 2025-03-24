@@ -10,6 +10,7 @@ Responsibilites involve:
 
 """
 import pandas as pd
+import os
 
 class Controller:
     def __init__(self, model, view, dataset_options):
@@ -17,7 +18,9 @@ class Controller:
         self.view = view
         self.dataset_options = dataset_options  
         #Pre load for efficiency for the demonstration
-        self.dataset = pd.read_csv("dev/fake_profile_detector_app/production_csv/validation_sample.csv")
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+        CSV_PATH = os.path.join(BASE_DIR, "production_csv", "validation_sample.csv") 
+        self.dataset = pd.read_csv(CSV_PATH)
 
     # To be used if other datasets are to be loaded
     def load_selected_dataset(self, dataset_name):

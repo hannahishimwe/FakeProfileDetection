@@ -14,13 +14,13 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch.nn.functional as F 
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-
+import os
 class Model:
 
     HUMAN_LABEL = 1
-    MODEL_NAME = "dev/fake_profile_detector_app/model/checkpoint-3125"  
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
+    MODEL_NAME = os.path.join(BASE_DIR, "model", "checkpoint-3125")  
     TOKENIZER_NAME = "roberta-base" 
-    QUANTIZED_MODEL_PATH = f"{MODEL_NAME}/quantized_model.pt"  
     
     def __init__(self):
         """
@@ -37,13 +37,7 @@ class Model:
         self.outputs = None
         self.inputs = None
         try:
-            self.model = AutoModelForSequenceClassification.from_pretrained(self.MODEL_NAME)
-            #quanitize to reduce model size
-            if not os.path.exists(self.QUANTIZED_MODEL_PATH):
-                self.quantize_and_save_model()
-            else:
-                self.model.load_state_dict(torch.load(self.QUANTIZED_MODEL_PATH))
-
+            self.model = AutoModelForSequenceClassification.from_pretrained(self.MODEL_NAME, from_tf=False)
             self.tokenizer = AutoTokenizer.from_pretrained(self.TOKENIZER_NAME)
         except Exception as e:
             raise ValueError(f"Error loading model or tokenizer: {e}")
@@ -100,7 +94,7 @@ class Model:
             "F1-score": round(f1, 4)
         }
 
-    def get_classification(self, input_text: str) -> tuple[str, float]:
+    def get_classification(self, input_text: str):
         """
 
         Processes input and uses helper function to return the classification and probability of the prediction
@@ -127,11 +121,3 @@ class Model:
         
         return prediction
 
-
-
-    def quantize_and_save_model(self):
-        """Quantizes the model and saves it for future use."""
-        self.model = torch.quantization.quantize_dynamic(
-            self.model, {torch.nn.Linear}, dtype=torch.qint8
-        )
-        torch.save(self.model.state_dict(), self.QUANTIZED_MODEL_PATH)
