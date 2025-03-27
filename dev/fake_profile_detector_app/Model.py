@@ -8,19 +8,18 @@ Responsibilites involve:
 - responding to the input text data passed in from the user and returning the prediction from the model.
 
 """
-import os
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch.nn.functional as F 
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-import os
+
 class Model:
 
     HUMAN_LABEL = 1
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
-    MODEL_NAME = os.path.join(BASE_DIR, "model", "checkpoint-3125")  
+    MODEL_NAME = "hannahishimwe/fakeprofiledetection_roberta"
     TOKENIZER_NAME = "roberta-base" 
+    
     
     def __init__(self):
         """
@@ -34,8 +33,6 @@ class Model:
         - tokenizer_name(str): the name of the pre-trained tokenizer to be loaded
 
         """
-        self.outputs = None
-        self.inputs = None
         try:
             self.model = AutoModelForSequenceClassification.from_pretrained(self.MODEL_NAME, from_tf=False)
             self.tokenizer = AutoTokenizer.from_pretrained(self.TOKENIZER_NAME)
@@ -58,41 +55,21 @@ class Model:
         - dict: A dictionary containing Accuracy, Precision, Recall, F1-score, 
         and the count of predicted Humans and Bots.
         """
-        print("starting evaluations...")
-        predictions = []
-
-        for text in df[text_column]:
-            pred_label = self.get_classification(text)  # Model's classification
-            predictions.append(1 if pred_label == "Human" else 0)  # Convert to binary
-
-        # Convert to Pandas Series for easy aggregation
-        y_pred = pd.Series(predictions)
+        y_pred = df[text_column].apply(self.get_classification).map({"Human": 1, "Bot": 0})
         y_true = df[label_column]
 
-        # Compute evaluation metrics
-        accuracy = accuracy_score(y_true, y_pred)
-        precision = precision_score(y_true, y_pred)
-        recall = recall_score(y_true, y_pred)
-        f1 = f1_score(y_true, y_pred)
-
-        # Count predicted classes
-        num_pred_humans = (y_pred == 1).sum()
-        num_pred_bots = (y_pred == 0).sum()
-
-    # Count actual classes
-        num_actual_humans = (y_true == 1).sum()
-        num_actual_bots = (y_true == 0).sum()
-
-        return {
-            "Predicted Humans": num_pred_humans,
-            "Predicted Bots": num_pred_bots,
-            "Actual Humans": num_actual_humans,
-            "Actual Bots": num_actual_bots,
-            "Accuracy": round(accuracy, 4),
-            "Precision": round(precision, 4),
-            "Recall": round(recall, 4),
-            "F1-score": round(f1, 4)
+        metrics = {
+            "Accuracy": round(accuracy_score(y_true, y_pred), 4),
+            "Precision": round(precision_score(y_true, y_pred), 4),
+            "Recall": round(recall_score(y_true, y_pred), 4),
+            "F1-score": round(f1_score(y_true, y_pred), 4),
+            "Predicted Humans": (y_pred == 1).sum(),
+            "Predicted Bots": (y_pred == 0).sum(),
+            "Actual Humans": (y_true == 1).sum(),
+            "Actual Bots": (y_true == 0).sum(),
         }
+
+        return metrics
 
     def get_classification(self, input_text: str):
         """
@@ -112,12 +89,11 @@ class Model:
         
         """
 
-        self.inputs = self.tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
+        inputs = self.tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
 
-        with torch.no_grad(): 
-            self.outputs = self.model(**self.inputs)
-        
-        prediction = "Human" if torch.argmax(self.outputs.logits, dim=-1).item() == self.HUMAN_LABEL else "Bot"
-        
-        return prediction
+        with torch.no_grad():
+            logits = self.model(**inputs).logits
+
+        return "Human" if torch.argmax(logits).item() == self.HUMAN_LABEL else "Bot"
+
 
