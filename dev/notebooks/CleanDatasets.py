@@ -1,16 +1,6 @@
 """
-Cleaning text dataset
-Remove extra lines
-Remove extra spaces
-Remove extra tabs
-Remove extra new lines
-Rename columns
-Drop columns - not needed for research problem
-Get rid of unicode characters
-Rename Account type to isHuman -> if human 1 else 0
-have parameters for preprocessing dependent on what will be trained? (e.g. capitilisation left in or out)
-there are no NAs in my dataset
-kevinhookebot is interesting to write about"""
+This file contains the CleanDatasets class which is used to clean and preprocess datasets.
+"""
 import html
 import re
 import emoji
