@@ -10,6 +10,23 @@ This repository contains tools and models for detecting fake profiles, specifica
     - **fake_profile_detector_app**: The folder containing a GUI application for demonstrating the optimised model.
     - **notebooks**: The directory containing Jupyter notebooks related to model training, optimisation, and evaluation.
 
+## Dependencies for the app
+
+To install all the required dependencies, you can use the following:
+
+```bash
+pip install -r requirements.txt
+```
+## Running the App
+
+To run the Fake Profile Identification App, **ensure you are located in the repository folder** and then follow this step:
+
+### On the Terminal run the application through Start.py:
+
+```bash
+python3 dev/fake_profile_detector_app/Start.py
+```
+
 ### Notebooks Directory
 The **notebooks** directory contains the Jupyter notebook that focus on building, training, and evaluating transformer-based models for text classification. Below is a description of the key notebook file:
 
@@ -30,9 +47,9 @@ This notebook focuses on building and evaluating transformer-based models for te
 
 ## Running the Notebooks in Google Colab
 
-To use the notebooks and run the code on **Google Colab**, follow these steps:
+As explained in more detail in the file, this is the necessary step: 
 
-### Step 1: Clone the Repository to Google Drive
+### Clone the Repository to Google Drive
 On first-time access, uncomment the following lines in the notebook to clone the repository into your Google Drive:
 
 ```python
@@ -42,22 +59,6 @@ On first-time access, uncomment the following lines in the notebook to clone the
 
 Then you will be able to run the rest of the cells
 
-## Dependencies
-
-To install all the required dependencies, you can use the following:
-
-```bash
-pip install -r requirements.txt
-```
-## Running the App
-
-To run the Fake Profile Identification App, follow these steps:
-
-### On the Terminal run the application through Start.py:
-
-```bash
-python3 dev/fake_profile_detector_app/Start.py
-```
 ## Academic Note:
 
 This application is for research purposes, and the performance limitations (due to Tkinter's single-threaded nature) are acknowledged. Optimizing the UI for better performance under heavy computation was outside the scope of the project, as this was not part of the academic requirements.
