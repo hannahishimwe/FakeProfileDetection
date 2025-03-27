@@ -61,6 +61,6 @@ Then you will be able to run the rest of the cells
 
 ## Academic Note:
 
-This application is for research purposes, and the performance limitations (due to Tkinter's single-threaded nature) are acknowledged. Optimizing the UI for better performance under heavy computation was outside the scope of the project, as this was not part of the academic requirements.
+This application is for research purposes, and the performance limitations (due to Tkinter's single-threaded nature) are acknowledged. Optimising the UI for better performance under heavy computation was outside the scope of the project, as this was not part of the academic requirements.
 
 #### Feel free to clone the repository, experiment with the models, and explore the results! If you have any issues or suggestions, please feel free to raise an issue or create a pull request.
