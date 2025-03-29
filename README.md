@@ -62,4 +62,9 @@ python3 dev/fake_profile_detector_app/Start.py
 
 This application is for research purposes, and the performance limitations (due to Tkinter's single-threaded nature) are acknowledged. Optimizing the UI for better performance under heavy computation was outside the scope of the project, as this was not part of the academic requirements.
 
+Credits:
+- Datasets from: [Tweepfake Deep Fake Text Detection](https://github.com/tizfa/tweepfake_deepfake_text_detection)
+
+
 #### Feel free to clone the repository, experiment with the models, and explore the results! If you have any issues or suggestions, please feel free to raise an issue or create a pull request.
+
