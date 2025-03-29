@@ -10,6 +10,27 @@ This repository contains tools and models for detecting fake profiles, specifica
     - **fake_profile_detector_app**: The folder containing a GUI application for demonstrating the optimised model.
     - **notebooks**: The directory containing Jupyter notebooks related to model training, optimisation, and evaluation.
 
+### Fake Profile Detector App
+- **GUI Application**: This is a simple Tkinter-based app developed to demonstrate the optimized model in action. It leverages my model which I uploaded to **Hugging Face's cloud** for seamless inference. The app allows users to upload a CSV dataset and click "Classify Dataset" to receive the classification results and evaluation metrics.
+- **Note**: The application is single-threaded, meaning it can become slow or unresponsive when handling large datasets or heavy computation. Users are advised to be patient, as this application is primarily for research demonstration purposes.
+
+#### Dependencies for the app
+
+To install all the required dependencies, you can use the following:
+
+```bash
+pip install -r requirements.txt
+```
+#### Running the App
+
+To run the Fake Profile Identification App, **ensure you are located in the repository folder** and then follow this step:
+
+#### On the Terminal run the application through Start.py:
+
+```bash
+python3 dev/fake_profile_detector_app/Start.py
+```
+
 ### Notebooks Directory
 The **notebooks** directory contains the Jupyter notebook that focus on building, training, and evaluating transformer-based models for text classification. Below is a description of the key notebook file:
 
@@ -24,15 +45,11 @@ This notebook focuses on building and evaluating transformer-based models for te
 ### Clean Datasets
 - **Clean Datasets.py**: This Python script contains the `CleanDatasets` class, which is responsible for cleaning and preprocessing the datasets. This class is utilized within the notebooks for data preprocessing tasks.
 
-### Fake Profile Detector App
-- **GUI Application**: This is a simple Tkinter-based app developed to demonstrate the optimized model in action. It leverages my model which I uploaded to **Hugging Face's cloud** for seamless inference. The app allows users to upload a CSV dataset and click "Classify Dataset" to receive the classification results and evaluation metrics.
-- **Note**: The application is single-threaded, meaning it can become slow or unresponsive when handling large datasets or heavy computation. Users are advised to be patient, as this application is primarily for research demonstration purposes.
-
 ## Running the Notebooks in Google Colab
 
-To use the notebooks and run the code on **Google Colab**, follow these steps:
+As explained in more detail in the file, this is the necessary step: 
 
-### Step 1: Clone the Repository to Google Drive
+### Clone the Repository to Google Drive
 On first-time access, uncomment the following lines in the notebook to clone the repository into your Google Drive:
 
 ```python
@@ -42,29 +59,12 @@ On first-time access, uncomment the following lines in the notebook to clone the
 
 Then you will be able to run the rest of the cells
 
-## Dependencies
-
-To install all the required dependencies, you can use the following:
-
-```bash
-pip install -r requirements.txt
-```
-## Running the App
-
-To run the Fake Profile Identification App, follow these steps:
-
-### On the Terminal run the application through Start.py:
-
-```bash
-python3 dev/fake_profile_detector_app/Start.py
-```
 ## Academic Note:
 
-This application is for research purposes, and the performance limitations (due to Tkinter's single-threaded nature) are acknowledged. Optimizing the UI for better performance under heavy computation was outside the scope of the project, as this was not part of the academic requirements.
+This application is for research purposes, and the performance limitations (due to Tkinter's single-threaded nature) are acknowledged. Optimising the UI for better performance under heavy computation was outside the scope of the project, as this was not part of the academic requirements.
 
 Credits:
 - Datasets from: [Tweepfake Deep Fake Text Detection](https://github.com/tizfa/tweepfake_deepfake_text_detection)
 
 
 #### Feel free to clone the repository, experiment with the models, and explore the results! If you have any issues or suggestions, please feel free to raise an issue or create a pull request.
-
