@@ -12,7 +12,7 @@ This repository contains tools and models for detecting fake profiles, specifica
 
 ### Fake Profile Detector App
 - **GUI Application**: This is a simple Tkinter-based app developed to demonstrate the optimized model in action. It leverages my model which I uploaded to **Hugging Face's cloud** for seamless inference. The app allows users to upload a CSV dataset and click "Classify Dataset" to receive the classification results and evaluation metrics.
-- **Note**: The application is single-threaded, meaning it can become slow or unresponsive when handling large datasets or heavy computation. Users are advised to be patient, as this application is primarily for research demonstration purposes.
+- **Note**: The application is single-threaded, meaning it can become slow or unresponsive when handling large datasets or heavy computation. Users are advised to be patient, as this application is primarily for research demonstration purposes. Upon launching the application, users may experience delays.
 
 #### Dependencies for the app
 
@@ -21,6 +21,8 @@ To install all the required dependencies, you can use the following:
 ```bash
 pip install -r requirements.txt
 ```
+When running the notebooks, dependencies are installed by running a cell as using GPU on the cloud requires continual reinstallation.
+
 #### Running the App
 
 To run the Fake Profile Identification App, **ensure you are located in the repository folder** and then follow this step:
@@ -65,6 +67,12 @@ This application is for research purposes, and the performance limitations (due 
 
 Credits:
 - Datasets from: [Tweepfake Deep Fake Text Detection](https://github.com/tizfa/tweepfake_deepfake_text_detection)
+- [Tkinter Documentation](https://docs.python.org/3/library/tkinter.html)
+- [Tkinter Tutorials](https://www.tutorialspoint.com/python/python_gui_programming.htm)
+- [torch Documentation](https://pytorch.org/docs/stable/torch.html)
+- [Hugging Face Transformers](https://huggingface.co/docs/transformers/en/index)
+- [Python Pandas API](https://pandas.pydata.org/docs/reference/index.html)
+
 
 
 #### Feel free to clone the repository, experiment with the models, and explore the results! If you have any issues or suggestions, please feel free to raise an issue or create a pull request.
